@@ -10,9 +10,7 @@ export const ProductCard = ({ data }) => {
     data.view_exit_fee
   ];
 
-  function removeTags(str) {
-    return str.replace(/(<([^>]+)>)/gi, "");
-  }
+  console.log(data.dmo_content.Ausgrid)
 
   return (
     <CardContainer>
@@ -37,7 +35,15 @@ export const ProductCard = ({ data }) => {
           </HighLightBox>
           <FeaturesContainer>
             {featuresData.map((item, index) => (
-              <FeatureText key={index}>✔ {removeTags(item)}</FeatureText>
+              <FeatureBox key={index}>
+                ✔{" "}
+                <FeatureText
+                  key={index}
+                  dangerouslySetInnerHTML={{
+                    __html: item
+                  }}
+                />
+              </FeatureBox>
             ))}
           </FeaturesContainer>
           <StandardFeedBox>Standard Feed in Tarrif: 5c</StandardFeedBox>
@@ -61,10 +67,14 @@ export const ProductCard = ({ data }) => {
         </EstimatedCost>
       </HeaderContainer>
       <DetailsConatiner>
-        {removeTags(data.dmo_content.Ausgrid)}
+        <div
+          dangerouslySetInnerHTML={{
+            __html: data.dmo_content.Ausgrid
+          }}
+        />
       </DetailsConatiner>
       <FooterConatiner>
-        <div style={{width: "80%"}}>
+        <div style={{ width: "80%" }}>
           <FeatureText>✔ 10 business days cooling off period</FeatureText>
           <FeatureText>✔ Secure signup in 5 minutes</FeatureText>
           <FeatureText>✔ Save time and effort</FeatureText>
@@ -85,7 +95,7 @@ const CardContainer = styled.div`
   border: 1px solid gray;
   border-radius: 10px;
   position: relative;
-  max-width: 1200px
+  max-width: 1200px;
 `;
 
 const BarContainer = styled.div`
@@ -140,13 +150,20 @@ const HighLightBox = styled.div`
 
 const FeaturesContainer = styled.div`
   max-width: 350px;
-  margin: auto;
+  margin: 10px auto;
   text-align: center;
 `;
 
-const FeatureText = styled.p`
-  display: inline;
-  margin: 5px;
+const FeatureBox = styled.span`
+  margin-left: 15px;
+`;
+
+const FeatureText = styled.section`
+  display: inline-block;
+  p {
+    margin: 0;
+    padding: 0;
+  }
 `;
 
 const HeaderDeatils = styled.div`
@@ -216,5 +233,5 @@ const FooterBtn = styled.button`
   padding: 15px;
   border-radius: 30px;
   width: "10%";
-  height: 10%
+  height: 10%;
 `;
