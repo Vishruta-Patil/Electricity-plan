@@ -17,10 +17,7 @@ const ProductList = () => {
     try {
       const res = await fetch("/api/getToken");
       const authToken = await res.json();
-
       let expires = new Date();
-      const tk = authToken?.data?.token_expire_time
-      console.log(Date.parse(tk))
       expires.setTime(
         expires.getTime() + Date.parse(authToken?.data?.token_expire_time)
       );
