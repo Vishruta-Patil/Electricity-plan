@@ -4,49 +4,36 @@ import { Loader } from "../components/Loader";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
+import DOMPurify from "dompurify";
+import { useCookies } from 'react-cookie'
 
 const ProductList = () => {
   const [data, setData] = useState([]);
   const [loader, setLoader] = useState(false);
-
-  const localStorageWithExpiry = {
-    setItem: function(key, value, expiry) {
-      const newValue = {
-        value, 
-        expiry: Date.now() + expiry
-      }
-      localStorage.setItem(key, JSON.stringify(newValue))
-    },
-    getItem:   function(key) {
-      let data = localStorage.getItem(key)
-      data = JSON.parse(data)
-      if(Date.now() >= data?.expiry) {
-        localStorage.removeItem(key)
-        return null
-      }
-      else return data?.value
-    }
-  }
+  const [cookies, setCookie] = useCookies(['auth_token'])
 
   const getToken = async () => {
     setLoader(true);
     try {
       const res = await fetch("/api/getToken");
       const authToken = await res.json();
-      localStorageWithExpiry.setItem("token", authToken?.data?.token, 5000 ) 
+
+      let expires = new Date();
+      const tk = authToken?.data?.token_expire_time
+      console.log(Date.parse(tk))
+      expires.setTime(
+        expires.getTime() + Date.parse(authToken?.data?.token_expire_time)
+      );
+      setCookie("auth_token", authToken?.data?.token, { path: "/", expires });
     } catch (e) {
-      toast.error(e.message)
-    }
-    finally {
+      toast.error(e.message);
+    } finally {
       setLoader(false);
     }
   };
 
-  
-
   const getProductList = async (token) => {
     setLoader(true);
-    console.log({token})
     try {
       const res = await fetch("/api/getProducts", {
         headers: {
@@ -55,26 +42,35 @@ const ProductList = () => {
       });
       const serverData = await res.json();
       if (serverData.status) {
-        setData(serverData.data.electricity);
+        const sanitizeData = serverData.data.electricity.map((item) => ({
+          ...item,
+          view_benefit: DOMPurify.sanitize(item.view_benefit),
+          view_bonus: DOMPurify.sanitize(item.view_bonus),
+          view_contract: DOMPurify.sanitize(item.view_contract),
+          view_exit_fee: DOMPurify.sanitize(item.view_exit_fee)
+        }));
+
+        setData(sanitizeData);
       } else {
-        if (serverData.message === "Your token has been expired." || serverData.message === "Invalid Auth-Token.") {
+        if (
+          serverData.message === "Your token has been expired." ||
+          serverData.message === "Invalid Auth-Token."
+        ) {
           await getToken();
-          toast.error(serverData.message)
+          toast.error(serverData.message);
         }
       }
     } catch (e) {
-      toast.error(e.message)
+      toast.error(e.message);
     } finally {
       setLoader(false);
     }
   };
 
-  
-
   useEffect(() => {
-    (async () => { 
-      await getToken(); 
-      const token = localStorageWithExpiry.getItem("token")
+    (async () => {
+      await getToken();
+      const token = cookies.auth_token;
       if (token) {
         getProductList(token);
       } else {
@@ -82,7 +78,6 @@ const ProductList = () => {
       }
     })();
   }, []);
-
 
   return (
     <div>
@@ -100,27 +95,24 @@ const ProductList = () => {
       />
       {loader ? (
         <Loader />
-      ) : 
-      <div>
-        <DataCount>Electricity : {data.length}</DataCount>
-      {data ? (
-        data.map((data, index) => <ProductCard key={index} data={data}/>)
       ) : (
-        "No Data Found"
+        <div>
+          <DataCount>Electricity : {data.length}</DataCount>
+          {data
+            ? data.map((data, index) => <ProductCard key={index} data={data} />)
+            : "No Data Found"}
+        </div>
       )}
-      </div>
-}
     </div>
   );
 };
 
 export default ProductList;
 
-
 const DataCount = styled.div`
-  background: #2F5EA1;
+  background: #2f5ea1;
   padding: 7px;
   color: #fff;
   display: inline-block;
   border-radius: 5px;
-`
+`;

@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FaInfoCircle, FaLightbulb, FaSun } from "react-icons/fa";
+import DOMPurify from 'dompurify'
 
 export const ProductCard = ({ data }) => {
   const featuresData = [
@@ -9,8 +10,6 @@ export const ProductCard = ({ data }) => {
     data.view_contract,
     data.view_exit_fee
   ];
-
-  console.log(data.dmo_content.Ausgrid)
 
   return (
     <CardContainer>
@@ -69,7 +68,7 @@ export const ProductCard = ({ data }) => {
       <DetailsConatiner>
         <div
           dangerouslySetInnerHTML={{
-            __html: data.dmo_content.Ausgrid
+            __html: DOMPurify.sanitize(data.dmo_content.Ausgrid)
           }}
         />
       </DetailsConatiner>

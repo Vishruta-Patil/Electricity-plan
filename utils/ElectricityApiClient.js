@@ -1,3 +1,5 @@
+import { GET_ELECTRICITY_PLANS, GET_TOKEN } from "./config";
+
 export class ElectricityApiClient {
   constructor(authToken) {
     this.authToken = authToken;
@@ -14,7 +16,7 @@ export class ElectricityApiClient {
 
   async getElecProduct() {
     try {
-      const response = await fetch(`${this.baseURL}/plan-list`, {
+      const response = await fetch(`${this.baseURL}${GET_ELECTRICITY_PLANS}`, {
         method: "POST",
         headers: this.headers,
         body: JSON.stringify({
@@ -30,7 +32,7 @@ export class ElectricityApiClient {
 
   async getAuthToken() {
     try {
-      const response = await fetch(`${this.baseURL}/generate-token`, {
+      const response = await fetch(`${this.baseURL}${GET_TOKEN}`, {
         method: "POST",
         headers: {
           "Api-key": "4NKQ3-815C2-8T5Q2-16318-55301"
